@@ -1,5 +1,5 @@
 ## 区块链浏览器地址监控预警系统
-> 超低延迟，支持一个地址多链监控，目前支持bsc、eth、ftm、polygon。
+> 超低延迟，支持一个地址多链监控，目前支持bsc、eth、ftm、polygon、avax。
 
 ### 成果示例图
 [![obYddf.png](https://s4.ax1x.com/2021/12/12/obYddf.png)](https://imgtu.com/i/obYddf)
@@ -14,6 +14,7 @@
 **如果你发现了某个地址有很强的盈利水平，那么请加我钉钉 ，我会添加到订阅服务中。**
 
 
-钉钉群号：34968076
+钉钉群号：34968076。
+eth链监控(主玩nft地址):[邀请🔗](https://qr.dingtalk.com/action/joingroup?code=v1,k1,WxLZzg5ZULDWbxTBEQBcrhTolk66pzx037bYj+o81SE=&_dt_no_comment=1&origin=11)
 
 [![ob6n91.jpg](https://s4.ax1x.com/2021/12/12/ob6n91.jpg)](https://imgtu.com/i/ob6n91)
