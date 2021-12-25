@@ -1,5 +1,5 @@
 import json,os
-
+from perpar_data import apikey_MATIC,apikey_FTM,apikey_ETH,apikey_BSC,apikey_AVAX
 data_path = os.getcwd()+ "/storage_data.json"
 
 class FuncData:
@@ -25,21 +25,20 @@ class FuncData:
 
     ####------下面为输出函数--------####
 
-    def get_block_list_bsc(self):
+    def get_block_list(self,type):
         data_json = self._get_json_data()
-        return data_json["block_list_bsc"]
+        if type == apikey_AVAX:
+            return data_json["block_list_avax"]
+        elif type == apikey_ETH:
+            return data_json['block_list_eth']
+        elif type == apikey_BSC:
+            return data_json["block_list_bsc"]
+        elif type == apikey_MATIC:
+            return data_json["block_list_matic"]
+        elif type == apikey_FTM:
+            return data_json["block_list_ftm"]
 
-    def get_block_list_ftm(self):
-        data_json = self._get_json_data()
-        return data_json["block_list_ftm"]
 
-    def get_block_list_matic(self):
-        data_json = self._get_json_data()
-        return data_json["block_list_matic"]
-
-    def get_block_list_eth(self):
-        data_json = self._get_json_data()
-        return data_json["block_list_eth"]
 
     def modify_block_list(self,block_number,type):
         '''
@@ -48,49 +47,18 @@ class FuncData:
         :return:
         '''
         data_json = self._get_json_data()
-        if type == 'bsc':
+        if type == apikey_BSC:
             data_json['block_list_bsc'].append(block_number)
-        elif type == 'ftm':
+        elif type == apikey_FTM:
             data_json['block_list_ftm'].append(block_number)
-        elif type == "matic":
+        elif type == apikey_MATIC:
             data_json['block_list_matic'].append(block_number)
-        elif type == "eth":
+        elif type == apikey_ETH:
             data_json['block_list_eth'].append(block_number)
-
-
-        self._modify_json_data(data_json)
-
-    def get_hash_list_eth(self):
-        data_json = self._get_json_data()
-        return data_json["hash_list_eth"]
-
-    def get_hash_list_bsc(self):
-        data_json = self._get_json_data()
-        return data_json["hash_list_bsc"]
-
-    def get_hash_list_ftm(self):
-        data_json = self._get_json_data()
-        return data_json["hash_list_ftm"]
-
-    def get_hash_list_matic(self):
-        data_json = self._get_json_data()
-        return data_json["hash_list_matic"]
-
-    def modify_hash_list(self,hash_number,type):
-        '''
-
-        :param type: bsc、ftm、matic
-        :return:
-        '''
-        data_json = self._get_json_data()
-        if type == 'bsc':
-            data_json['hash_list_bsc'].append(hash_number)
-        elif type == 'ftm':
-            data_json['hash_list_ftm'].append(hash_number)
-        elif type == "matic":
-            data_json['hash_list_matic'].append(hash_number)
-        elif type == "eth":
-            data_json['hash_list_eth'].append(hash_number)
+        elif type == apikey_AVAX:
+            data_json['block_list_avax'].append(block_number)
 
         self._modify_json_data(data_json)
+
+
 

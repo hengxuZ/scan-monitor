@@ -1,27 +1,26 @@
 import requests,json,time
-from perpar_data import oxdata,method_data,dingding_token,contract_list
+from perpar_data import oxdata,method_data,dingding_token,contract_list,apikey_MATIC,apikey_FTM,apikey_ETH,apikey_BSC,apikey_AVAX
 
 from FuncData import FuncData
-
-from fake_useragent import UserAgent
-ua = UserAgent(verify_ssl=False)
-
 funcdata = FuncData()
 
 class Exercises:
     '''基于各大scan的api开发的监控地址预警系统'''
 
     def __init__(self):
-        self.BASE_URL = "https://api.bscscan.com/api"
+        self.BASE_URL_BSC = "https://api.bscscan.com/api"
         self.BASE_URL_ETH = "https://api.etherscan.io/api"
         self.BASE_URL_FTM = "https://api.ftmscan.com/api"
         self.BASE_URL_MATIC = "https://api.polygonscan.com/api"
-        self.apikey_FTM = ""
-        self.apikey_MATIC = ""
+        self.BASE_URL_AVAX = "https://api.snowtrace.io/api"
+        self.apikey_FTM = apikey_FTM
+        self.apikey_MATIC = apikey_MATIC
         self.wei = 1000000000000000000
-        self.apikey_BSC = ""
-        self.apikey_ETH = ""
-        self.dingding_token = dingding_token
+        self.apikey_BSC = apikey_BSC
+        self.apikey_ETH = apikey_ETH
+        self.apikey_AVAX = apikey_AVAX
+        self.eth_dingding_token = "" # 可不填
+
 
 
     def split_msg(self,dict):
@@ -63,7 +62,6 @@ class Exercises:
         if  dict['from'] in oxdata.keys():
             dict['from'] = oxdata[dict['from']]
 
-
         return "发送方:{send}\n\n to:{recive}。\n\n 方式：{method} \n\n 价值：{value} ETH。\n\n [debank]({link}) \n [区块transfer]({transfer}) \t [区块hash]({hash_link}) \t [opensea]({open_link}) \n\n 时间：{time}".\
             format(method=dict['method'],transfer=transfer_link,hash_link=bscscan_hash_link,link=debank_link,open_link=opensea_link,value=float(dict['value']) / self.wei,time=self.stampTransformTime(int(dict['time'])), send=dict['from'],recive=dict['to'])
 
@@ -88,7 +86,7 @@ class Exercises:
             cur_from = dict['from']
 
 
-        return "操作方:{send}\n\n 操作:{recive}。\n\n 价值：{value} FTM。\n\n [debank]({link})\n\n [区块transfer]({transfer}) \n\n [区块hash]({hash_link}) \n\n 时间：{time}".format(transfer=transfer_link,hash_link=bscscan_hash_link,link=debank_link,value=float(dict['value']) / self.wei,time=self.stampTransformTime(int(dict['time'])),send=cur_from,recive=cur_to)
+        return "操作方:{send}\n\n 操作:{recive}。\n\n 价值：{value} FTM。\n\n [debank]({link})\t [区块transfer]({transfer}) \t [区块hash]({hash_link}) \n\n 时间：{time}".format(transfer=transfer_link,hash_link=bscscan_hash_link,link=debank_link,value=float(dict['value']) / self.wei,time=self.stampTransformTime(int(dict['time'])),send=cur_from,recive=cur_to)
 
     def split_msg_matic(self,dict):
         '''拼接消息'''
@@ -109,24 +107,48 @@ class Exercises:
             cur_from = dict['from']
 
 
-        return "操作方:{send}\n\n 操作:{recive}。\n\n 价值：{value} Matic。\n\n [debank]({link})\n\n [区块transfer]({transfer}) \n\n [区块hash]({hash_link}) \n\n 时间：{time}".format(transfer=transfer_link,hash_link=bscscan_hash_link,link=debank_link,value=float(dict['value']) / self.wei,time=self.stampTransformTime(int(dict['time'])),send=cur_from,recive=cur_to)
+        return "操作方:{send}\n\n 操作:{recive}。\n\n 价值：{value} Matic。\n\n [debank]({link})\t [区块transfer]({transfer}) \t [区块hash]({hash_link}) \n\n 时间：{time}".format(transfer=transfer_link,hash_link=bscscan_hash_link,link=debank_link,value=float(dict['value']) / self.wei,time=self.stampTransformTime(int(dict['time'])),send=cur_from,recive=cur_to)
 
+    def split_msg_avax(self,dict):
+        '''拼接消息'''
+        cur_from = ''
+        cur_to = ''
+        # self.error_checkout(dict)
+        debank_link = "https://debank.com/profile/"+ dict['from'] + "/history?chain=avax&token="
+        bscscan_hash_link = "https://snowtrace.io/tx/" + dict['hash']
+        transfer_link = "https://snowtrace.io/address/" + dict['from']
+        if  dict['to'] in oxdata.keys():
+            cur_to = oxdata[dict['to']]
+        else:
+            cur_to = dict['to']
+
+        if  dict['from'] in oxdata.keys():
+            cur_from = oxdata[dict['from']]
+        else:
+            cur_from = dict['from']
+
+
+        return "操作方:{send}\n\n 操作:{recive}。\n\n 价值：{value} AVAX。\n\n [debank]({link})\t [区块transfer]({transfer}) \t [区块hash]({hash_link}) \n\n 时间：{time}".format(transfer=transfer_link,hash_link=bscscan_hash_link,link=debank_link,value=float(dict['value']) / self.wei,time=self.stampTransformTime(int(dict['time'])),send=cur_from,recive=cur_to)
 
 
     def dingding_warn(self,dict,tag=None):
         '''钉钉消息推送'''
-        headers = {'Content-Type': 'application/json;charset=utf-8','User-Agent': ua.random}
-        api_url = "https://oapi.dingtalk.com/robot/send?access_token=%s" % self.dingding_token
-        if tag == "ftm":
+        headers = {'Content-Type': 'application/json;charset=utf-8','User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3100.0 Safari/537.36'}
+        api_url = "https://oapi.dingtalk.com/robot/send?access_token=%s" % dingding_token
+        eth_dingding_token = dingding_token if self.eth_dingding_token == "" else self.eth_dingding_token
+        if tag == self.apikey_FTM:
             final_text = self.split_msg_ftm(dict)
         elif tag == "error":
             final_text = dict
-        elif tag == "matic":
+        elif tag == self.apikey_MATIC:
             final_text = self.split_msg_matic(dict)
-        elif tag == "eth":
+        elif tag == self.apikey_ETH:
+            api_url = "https://oapi.dingtalk.com/robot/send?access_token=%s" % eth_dingding_token
             final_text = self.split_msg_eth(dict)
-        else:
+        elif tag == self.apikey_BSC:
             final_text = self.split_msg(dict)
+        elif tag == self.apikey_AVAX:
+            final_text = self.split_msg_avax(dict)
 
         json_text = {
             "msgtype": "markdown",
@@ -169,8 +191,19 @@ class Exercises:
             'address': address,
             'apikey': type_api
         }
+        url = ""
+        if type_api == self.apikey_BSC:
+            url = self.BASE_URL_BSC
+        elif type_api == self.apikey_ETH:
+            url = self.BASE_URL_ETH
+        elif type_api == self.apikey_FTM:
+            url = self.BASE_URL_FTM
+        elif type_api == self.apikey_MATIC:
+            url = self.BASE_URL_MATIC
+        elif type_api == self.apikey_AVAX:
+            url = self.BASE_URL_AVAX
         try:
-            res = requests.get(self.BASE_URL, params)
+            res = requests.get(url, params)
             return res.json()
         except Exception as e:
             if str(e).find("443") != -1:  # 网络错误不用报错
@@ -178,79 +211,33 @@ class Exercises:
             
     # ---- API接口封装  ------
 
-
-    def get_recent_tx_bsc(self,address,rotate_count=0):
+    def get_recent_tx(self,address,rotate_count=0):
         '''获取最新交易信息'''
-        res = self._get_txlist_api(2, address,self.apikey_BSC)
-        if res == 443 and rotate_count < 10:  # 网络问题并且20次都访问都是443则报错停止运行
-            rotate_count += 1
-            time.sleep(2)
-            self.get_recent_tx_bsc(address,rotate_count)
-        elif 'status' in res and res['status'] == '1':
-            first_mes = res['result'][0]
-            second_mes = res['result'][1]
-            if first_mes['blockNumber'] not in funcdata.get_block_list_bsc() and time.time() - float(first_mes['timeStamp'])  < 3600 and float(first_mes['timeStamp']) - float(second_mes['timeStamp']) > 300:
-                method = first_mes['input'][0:10]
-                self.dingding_warn({"time":first_mes['timeStamp'],"hash":first_mes['hash'],"value":first_mes['value'],"from":first_mes['from'],"to":first_mes['to'],'method':method})
-                funcdata.modify_block_list(str(first_mes['blockNumber']),'bsc')
+        apikey_list = [self.apikey_ETH,self.apikey_BSC,self.apikey_FTM,self.apikey_MATIC,self.apikey_AVAX]
+        for item in apikey_list:
+            res = self._get_txlist_api(2, address,item)
+            if res == 443 and rotate_count < 10:  # 网络问题并且20次都访问都是443则报错停止运行
+                rotate_count += 1
+                time.sleep(2)
+                self.get_recent_tx(address,rotate_count)
 
-    def get_recent_tx_eth(self,address,rotate_count=0):
-        '''获取最新交易信息'''
-        res = self._get_txlist_api(2, address,self.apikey_ETH)
-        if res == 443 and rotate_count < 10:  # 网络问题并且20次都访问都是443则报错停止运行
-            rotate_count += 1
-            time.sleep(2)
-            self.get_recent_tx_eth(address,rotate_count)
-        elif 'status' in res and res['status'] == '1':
-            first_mes = res['result'][0]
-            second_mes = res['result'][1]
-            if first_mes['blockNumber'] not in funcdata.get_block_list_eth() and time.time() - float(first_mes['timeStamp'])  < 3600 and float(first_mes['timeStamp']) - float(second_mes['timeStamp']) > 300:
-                method = first_mes['input'][0:10]
-                self.dingding_warn({"time":first_mes['timeStamp'],"hash":first_mes['hash'],"value":first_mes['value'],"from":first_mes['from'],"to":first_mes['to'],'method':method},"eth")
-                funcdata.modify_block_list(str(first_mes['blockNumber']),'eth')
+            elif 'status' in res and res['status'] == '1' and len(res['result']) > 1:
 
+                first_mes = res['result'][0]
+                second_mes = res['result'][1]
+                if first_mes['blockNumber'] not in funcdata.get_block_list(item) and time.time() - float(first_mes['timeStamp'])  < 3600 and float(first_mes['timeStamp']) - float(second_mes['timeStamp']) > 300:
+                    method = first_mes['input'][0:10]
+                    self.dingding_warn({"time":first_mes['timeStamp'],"hash":first_mes['hash'],"value":first_mes['value'],"from":first_mes['from'],"to":first_mes['to'],'method':method},item)
+                    funcdata.modify_block_list(str(first_mes['blockNumber']),item)
 
-
-    def get_recent_tx_ftm(self,address,rotate_count=0):
-        '''获取最新交易信息'''
-
-        res = self._get_txlist_api(1, address,self.BASE_URL_FTM)
-        if res == 443 and rotate_count < 10:  # 网络问题并且20次都访问都是443则报错停止运行
-            rotate_count += 1
-            time.sleep(2)
-            self.get_recent_tx_ftm(address,rotate_count)
-        elif 'status' in res and res['status'] == '1':
-            if res['result'][0]['blockNumber'] not in funcdata.get_block_list_ftm() and time.time() - float(res['result'][0]['timeStamp'])  < 3600:
-                self.dingding_warn({"time":res['result'][0]['timeStamp'],"hash":res['result'][0]['hash'],"value":res['result'][0]['value'],"from":res['result'][0]['from'],"to":res['result'][0]['to']},"ftm")
-                funcdata.modify_block_list(str(res['result'][0]['blockNumber']), 'ftm')
-
-    def get_recent_tx_matic(self,address,rotate_count=0):
-        '''获取最新交易信息'''
-        res = self._get_txlist_api(1, address,self.apikey_MATIC)
-        if res == 443 and rotate_count < 10:  # 网络问题并且20次都访问都是443则报错停止运行
-            rotate_count += 1
-            time.sleep(2)
-            self.get_recent_tx_matic(address,rotate_count)
-        elif 'status' in res and res['status'] == '1':
-            if res['result'][0]['blockNumber'] not in funcdata.get_block_list_matic() and time.time() - float(res['result'][0]['timeStamp'])  < 7200:
-                self.dingding_warn({"time":res['result'][0]['timeStamp'],"hash":res['result'][0]['hash'],"value":res['result'][0]['value'],"from":res['result'][0]['from'],"to":res['result'][0]['to']},"matic")
-                funcdata.modify_block_list(str(res['result'][0]['blockNumber']), 'matic')
 
 if __name__ == "__main__":
     ins = Exercises()
-    # try:
     while(True):
         for key in oxdata:
-            ins.get_recent_tx_eth(key)
+            ins.get_recent_tx(key)
             time.sleep(1)
-            ins.get_recent_tx_bsc(key)
-            time.sleep(1)
-            ins.get_recent_tx_ftm(key)
-            time.sleep(1)
-            ins.get_recent_tx_matic(key)
-            time.sleep(1)
-    # except Exception as e:
-    #     error_info = "预警：链上监控中断.错误原因{info}".format(info=str(e))
-    #     ins.dingding_warn(error_info,"error")
+
+
 
 
