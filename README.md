@@ -11,6 +11,11 @@
 #### 快速入门法
 如果您没有定制要求，那么可以扫码加入我的监控频道，里面有国内部分大V (地址大多通过大v晒的截图找到的）
 
-进入我的 discord: https://discord.gg/rCA8s9V2Jw
+作者 🔗：https://linktr.ee/erwaplayblockchain 
 
-[![ob6n91.jpg](https://s4.ax1x.com/2021/12/12/ob6n91.jpg)](https://imgtu.com/i/ob6n91)
+视频教程⬆️ 尽在YouTube  discord群链接🔗 ⬆️⬆️
+
+欢迎👏加入discord社群目标：打造一个频道，监控全网。别人知道的消息，你也能够第一时间发现。
+前期免费🆓，后期付费进群。收入的费用将成立DAO基金。基金用于购买白名单，nft，奖励对社区有贡献的小伙伴！
+
+![discord群](https://s4.ax1x.com/2022/01/22/7fCeVH.png)
